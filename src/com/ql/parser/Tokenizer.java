@@ -5,11 +5,9 @@ import java.util.LinkedList;
 public class Tokenizer {
 
 	public static void main(String[] args) {
-		LinkedList<Token> tokens = getTokens("(\"bruno\" AND r & (\"mateus\" OR \"julio\")) AND \"eduardo\"");
+		LinkedList<Token> tokens = getTokens("(\"bruno\" AND r & (\"marcellus\" OR \"murilo\")) AND \"eduardo\"");
 
-		for (Token token : tokens) {
-			System.out.println(token.getType() + " - " + token.getValue());
-		}
+		System.out.println(tokens);
 	}
 
 	public static LinkedList<Token> getTokens(String input) {
@@ -25,9 +23,16 @@ public class Tokenizer {
 				case ' ':
 					break;
 				case Punctuation.L_PARENT:
+					tokens.add(
+						new Token(TokenType.L_PAREN, String.valueOf(chars[i]))
+					);
+					
+					value = "";
+
+					break;
 				case Punctuation.R_PARENT:
 					tokens.add(
-						new Token(TokenType.PUNCTUATION, String.valueOf(chars[i]))
+						new Token(TokenType.R_PARENT, String.valueOf(chars[i]))
 					);
 
 					value = "";
@@ -37,7 +42,7 @@ public class Tokenizer {
 					while (++i < chars.length) {
 						if (chars[i] == Punctuation.QUOTE) {
 							tokens.add(
-								new Token(TokenType.CONSTANT, value)
+								new Token(TokenType.STRING, value)
 							);
 
 							break;

@@ -7,6 +7,11 @@ public class Token {
 		_value = value;
 	}
 
+	public boolean equals(Token token) {
+		return (token.getType() == getType()) &&
+				token.getValue().equals(getValue());
+	}
+
 	public TokenType getType() {
 		return _type;
 	}
@@ -22,7 +27,12 @@ public class Token {
 	public void setValue(String value) {
 		this._value = value;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "{ type: " + getType() + ", value: \"" + getValue() + "\" }";
+	}
+
 	private TokenType _type;
 	private String _value;
 	
