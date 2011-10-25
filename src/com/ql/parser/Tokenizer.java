@@ -4,21 +4,15 @@ import java.util.LinkedList;
 
 public class Tokenizer {
 
-	public static void main(String[] args) {
-		LinkedList<Token> tokens = getTokens("(\"bruno\" AND r & (\"marcellus\" OR \"murilo\")) AND \"eduardo\"");
-
-		System.out.println(tokens);
-	}
-
 	public static LinkedList<Token> getTokens(String input) {
 		char[] chars = input.toCharArray();
-		
+
 		LinkedList<Token> tokens = new LinkedList<Token>();
-		
+
 		String value = "";
 
 		for (int i = 0; i < chars.length; i++) {
-			
+
 			switch (chars[i]) {
 				case ' ':
 					break;
@@ -26,7 +20,7 @@ public class Tokenizer {
 					tokens.add(
 						new Token(TokenType.L_PARENT, String.valueOf(chars[i]))
 					);
-					
+
 					value = "";
 
 					break;
@@ -52,7 +46,7 @@ public class Tokenizer {
 					}
 
 					value = "";
-					
+
 					break;
 				case 'A':
 				case 'D':
@@ -68,7 +62,7 @@ public class Tokenizer {
 
 						value = "";
 					}
-					
+
 					break;
 				default:
 					tokens.add(
@@ -80,10 +74,10 @@ public class Tokenizer {
 					break;
 			}
 		}
-		
+
 		return tokens;
 	}
-	
+
 	private static boolean lookupOperator(String value) {
 		return value.equals(ReservedWords.AND) || value.equals(ReservedWords.OR);
 	}
