@@ -2,9 +2,13 @@ package com.ql.parser;
 
 import java.util.LinkedList;
 
+import com.ql.parser.exception.SyntaxException;
+
 public class Tokenizer {
 
-	public static LinkedList<Token> getTokens(String input) {
+	public static LinkedList<Token> getTokens(String input)
+		throws SyntaxException {
+
 		char[] chars = input.toCharArray();
 
 		LinkedList<Token> tokens = new LinkedList<Token>();
@@ -12,7 +16,6 @@ public class Tokenizer {
 		String value = "";
 
 		for (int i = 0; i < chars.length; i++) {
-
 			switch (chars[i]) {
 				case ' ':
 					break;
@@ -33,8 +36,11 @@ public class Tokenizer {
 
 					break;
 				case Punctuation.QUOTE:
-					while (++i < chars.length) {
-						if (chars[i] == Punctuation.QUOTE) {
+					while (i < chars.length) {
+						if (++i > (chars.length - 1)) {
+							throw new SyntaxException("Unterminated string");
+						}
+						else if (chars[i] == Punctuation.QUOTE) {
 							tokens.add(
 								new Token(TokenType.STRING, value)
 							);
@@ -65,13 +71,8 @@ public class Tokenizer {
 
 					break;
 				default:
-					tokens.add(
-						new Token(TokenType.UNKOWN, String.valueOf(chars[i]))
-					);
-
-					value = "";
-
-					break;
+					throw new SyntaxException(
+						"Unkown operator \"" + String.valueOf(chars[i]) + "\"");
 			}
 		}
 

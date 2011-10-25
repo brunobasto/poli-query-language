@@ -4,7 +4,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+import com.ql.parser.exception.SyntaxException;
+
 public class Parser {
+
+	private final LinkedList<Token> _tokensRPN;
+
+	public Parser(String query) throws SyntaxException {
+		_tokensRPN = toReversePolishNotation(Tokenizer.getTokens(query));
+	}
 
 	protected ArrayList<String> applyOperand(
 		ArrayList<String> words, Token operand) {
@@ -49,21 +57,16 @@ public class Parser {
 		return result;
 	}
 
-	private void error(String message) {
-		System.err.println(message);
-	}
-
-	public ArrayList<String> filter(ArrayList<String> words, String query) {
-		LinkedList<Token> tokens = Tokenizer.getTokens(query);
-		LinkedList<Token> rpnTokens = toReversePolishNotation(tokens);
-
-		System.out.println(rpnTokens);
-
+	public ArrayList<String> filter(ArrayList<String> words) {
 		LinkedList<ArrayList<String>> result =
 			new LinkedList<ArrayList<String>>();
 
-		while (rpnTokens.size() > 0) {
-			Token curToken = rpnTokens.poll();
+		LinkedList<Token> rpntokensCopy = new LinkedList<Token>();
+
+		rpntokensCopy.addAll(_tokensRPN);
+
+		while (rpntokensCopy.size() > 0) {
+			Token curToken = rpntokensCopy.poll();
 			TokenType type = curToken.getType();
 
 			if (type == TokenType.STRING) {
@@ -73,6 +76,10 @@ public class Parser {
 				result.add(applyOperator(
 					words, result.pollLast(), result.pollLast(), curToken));
 			}
+		}
+
+		if (result.size() == 0) {
+			return new ArrayList<String>();
 		}
 
 		return result.pollLast();
@@ -93,7 +100,7 @@ public class Parser {
 	}
 
 	protected LinkedList<Token> toReversePolishNotation(
-		LinkedList<Token> tokens) {
+		LinkedList<Token> tokens) throws SyntaxException {
 
 		LinkedList<Token> outputQueue = new LinkedList<Token>();
 		LinkedList<Token> operatorStack = new LinkedList<Token>();
@@ -124,9 +131,7 @@ public class Parser {
 					   (operatorStack.getLast().getType() != TokenType.L_PARENT)) {
 
 					if (operatorStack.size() == 0) {
-						error("Parenthesis unbalanced 1");
-
-						return null;
+						throw new SyntaxException("Parenthesis unbalanced");
 					}
 
 					outputQueue.add(operatorStack.pollLast());
@@ -143,9 +148,7 @@ public class Parser {
 				outputQueue.add(operatorStack.pollLast());
 			}
 			else {
-				error("Parenthesis unbalanced 2");
-
-				return null;
+				throw new SyntaxException("Parenthesis unbalanced");
 			}
 		}
 
