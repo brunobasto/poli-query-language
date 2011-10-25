@@ -4,7 +4,7 @@ public enum TokenType {
 
 	STRING,
 	
-	L_PAREN,
+	L_PARENT,
 	
 	R_PARENT,
 

@@ -24,7 +24,7 @@ public class Tokenizer {
 					break;
 				case Punctuation.L_PARENT:
 					tokens.add(
-						new Token(TokenType.L_PAREN, String.valueOf(chars[i]))
+						new Token(TokenType.L_PARENT, String.valueOf(chars[i]))
 					);
 					
 					value = "";

@@ -1,95 +1,169 @@
 package com.ql.parser;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Parser {
 	
 	public static void main(String[] args) {
-		new Parser("\"bruno\" AND (\"bruna\" OR \"julia\")");
+		new Parser("\"bruno\" OR (\"murilo\" AND \"junior\")");
+	}
+
+	public Parser(String query) {
+		ArrayList<String> words = new ArrayList<String>();
+		words.add("bruno");
+		words.add("eduardo");
+		words.add("carlos eduardo junior");
+		words.add("joao");
+		words.add("marcellus");
+		words.add("antonio");
+		words.add("murilo junior");
+		words.add("thiago");
+
+		System.out.println(filter(words, query));
 	}
 	
-	public Parser(String query) {
+	public ArrayList<String> filter(ArrayList<String> words, String query) {
 		_tokens = Tokenizer.getTokens(query);
 
-		System.out.println(_tokens);
+		LinkedList<Token> rpnTokens = toReversePolishNotation();
 
-		query();
-	}
+		System.out.println(rpnTokens);
 
-	private boolean accept(TokenType type) {
-		if (type == getToken().getType()) {
-			nextToken();
+		LinkedList<ArrayList<String>> result =
+			new LinkedList<ArrayList<String>>();
 
-			return true;
-		}
-		
-		return false;
-	}
-	
-	private void error() {
-		System.out.println("Unexpected token" + getToken());
-	}
+		while (rpnTokens.size() > 0) {
+			Token curToken = rpnTokens.poll();
+			TokenType type = curToken.getType();
 
-	private boolean expect(TokenType type) {
-		if (type == getToken().getType()) {
-			nextToken();
-			
-			return true;
+			if (type == TokenType.STRING) {
+				result.add(applyOperand(words, curToken));
+			}
+			else if (type == TokenType.OPERATOR) {
+				result.add(applyOperator(
+					words, result.pollLast(), result.pollLast(), curToken));
+			}
 		}
 
-		error();
-
-		return false;
+		return result.pollLast();
 	}
 
-	public void query() {
-		while (nextToken().getType() != TokenType.EOF) {
-			orExpression();
+	private ArrayList<String> applyOperand(
+		ArrayList<String> words, Token operand) {
+
+		ArrayList<String> result = new ArrayList<String>();
+
+		String value = operand.getValue();
+
+		for (String string : words) {
+			if (string.indexOf(value) > -1) {
+				result.add(string);
+			}
 		}
 
-		end();
+		return result;
 	}
-	
-	public void end() {
-		System.out.println("end");
-	}
-	
-	public void orExpression() {
-		andExpression();
-		
-		System.out.println("or " + getToken());
 
-		while (getToken().getType() == TokenType.OPERATOR && getToken().getValue().equals(ReservedWords.OR)) {
-			nextToken();
-			andExpression();
+	private ArrayList<String> applyOperator(
+		ArrayList<String> words, ArrayList<String> operand1,
+		ArrayList<String> operand2, Token operator) {
+
+		if ((operand1 == null) || (operand2 == null)) {
+			return words;
 		}
+
+		String value = operator.getValue();
+
+		ArrayList<String> result = new ArrayList<String>();
+
+		if (value.equals(ReservedWords.AND)) {
+			for (String string : operand1) {
+				if (operand2.contains(string)) {
+					result.add(string);
+				}
+			}
+		}
+		else if (value.equals(ReservedWords.OR)) {
+			result.addAll(operand1);
+			result.addAll(operand2);
+		}
+
+		return result;
 	}
 
-	public void andExpression() {
-		operand();
-
-		System.out.println("and " + getToken());
-
-		while (getToken().getType() == TokenType.OPERATOR && getToken().getValue().equals(ReservedWords.AND)) {
-			nextToken();
-			operand();
-		}
+	private void error(String message) {
+		System.err.println(message);
 	}
 
-	public void operand() {
-		if (accept(TokenType.STRING)) {
-			System.out.println("string");
-		}
-		else if (accept(TokenType.L_PAREN)) {
-			orExpression();
+	protected int getPrecedence(Token operator) {
+		String value = operator.getValue();
 
-			expect(TokenType.R_PARENT);
+		if (value.equals(ReservedWords.AND)) {
+			return 2;
+		}
+		else if (value.equals(ReservedWords.OR)) {
+			return 1;
 		}
 		else {
-			error();
-
-			nextToken();
+			return -1;
 		}
+	}
+
+	protected LinkedList<Token> toReversePolishNotation() {
+		LinkedList<Token> outputQueue = new LinkedList<Token>();
+		LinkedList<Token> operatorStack = new LinkedList<Token>();
+
+		while (nextToken().getType() != TokenType.EOF) {
+			Token curToken = getToken();
+			TokenType type = curToken.getType();
+
+			if (type == TokenType.STRING) {
+				outputQueue.add(curToken);
+			}
+			else if (type == TokenType.OPERATOR) {
+				while ((operatorStack.size() > 0) &&
+					   (getPrecedence(curToken) <=  getPrecedence(operatorStack.getLast()))) {
+
+					outputQueue.add(operatorStack.pollLast());
+				}
+
+				operatorStack.add(curToken);
+			}
+			else if (type == TokenType.L_PARENT) {
+				operatorStack.add(curToken);
+			}
+			else if (type == TokenType.R_PARENT) {
+				while ((operatorStack.size() > 0) &&
+					   (operatorStack.getLast().getType() != TokenType.L_PARENT)) {
+
+					if (operatorStack.size() == 0) {
+						error("Parenthesis unbalanced 1");
+
+						return null;
+					}
+
+					outputQueue.add(operatorStack.pollLast());
+				}
+
+				operatorStack.pollLast();
+			}
+		}
+
+		while (operatorStack.size() != 0) {
+			if (operatorStack.getLast().getType() != TokenType.L_PARENT &&
+			    operatorStack.getLast().getType() != TokenType.R_PARENT) {
+
+				outputQueue.add(operatorStack.pollLast());
+			}
+			else {
+				error("Parenthesis unbalanced 2");
+				
+				return null;
+			}
+		}
+
+		return outputQueue;
 	}
 
 	private Token getToken() {
@@ -106,12 +180,12 @@ public class Parser {
 		if (index >= _tokens.size()) {
 			return new Token(TokenType.EOF, null);
 		}
-		
+
 		return _tokens.get(index);
 	}
 
 	private int _curTokenIndex = -1;
-	
+
 	private LinkedList<Token> _tokens = null;
 
 }
