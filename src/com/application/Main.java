@@ -1,6 +1,7 @@
 package com.application;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,41 +12,43 @@ import com.ql.parser.exception.SyntaxException;
 
 public class Main {
 
-	private static ArrayList<String> getFirstNameFirst() {
+	private static ArrayList<String> getFirstNameFirst()
+		throws IOException {
+
 		ArrayList<String> names = new ArrayList<String>();
 
-		try {
-			ClassLoader classLoader = Main.class.getClassLoader();
+		ClassLoader classLoader = Main.class.getClassLoader();
 
-			InputStream in = classLoader.getResourceAsStream(
-				"random-names.csv");
+		InputStream in = classLoader.getResourceAsStream(
+			"META-INF/data/random-names.csv");
 
-			BufferedReader br = new BufferedReader(new InputStreamReader(in));
-
-			String line;
-
-			while ((line = br.readLine()) != null) {
-				String[] nameFormats = line.split(",");
-
-				names.add(nameFormats[3]);
-			}
-
-			in.close();
-		} catch (IOException ioe) {
-			System.out.println(
-				"An unexpected error occured: " + ioe.getMessage());
+		if (in == null) {
+			throw new FileNotFoundException(
+				"The database CSV file was not found.");
 		}
+
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+
+		String line;
+
+		while ((line = br.readLine()) != null) {
+			String[] nameFormats = line.split(",");
+
+			names.add(nameFormats[3]);
+		}
+
+		in.close();
 
 		return names;
 	}
 
 	public static void main(String[] args) {
-		ArrayList<String> database = getFirstNameFirst();
-
 		BufferedReader reader = new BufferedReader(
 			new InputStreamReader(System.in));
 
 		try {
+			ArrayList<String> database = getFirstNameFirst();
+
 			String query;
 
 			System.out.println(

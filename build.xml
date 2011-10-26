@@ -1,0 +1,34 @@
+<project name="QueryLanguageBuilder" default="all" basedir=".">
+  <description>Create and run Query Language application</description>
+
+  <property name="src" location="src"/>
+  <property name="classes" location="classes"/>
+  <property name="dist"  location="dist"/>
+
+  <target name="all" depends="clean,dist" />
+
+  <target name="init">
+    <mkdir dir="${classes}"/>
+  </target>
+
+  <target name="compile" depends="init">
+    <copy todir="${classes}">
+      <fileset dir="${src}" excludes="**/*.java"/>  
+    </copy>
+
+    <javac srcdir="${src}" destdir="${classes}"></javac>
+  </target>
+
+  <target name="dist" depends="compile">
+    <jar jarfile="${dist}/QueryLanguage.jar" basedir="${classes}" update="true">
+      <manifest>
+        <attribute name="Main-Class" value="com.application.Main"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="clean">
+    <delete dir="${classes}"/>
+    <delete dir="${dist}"/>
+  </target>
+</project>
