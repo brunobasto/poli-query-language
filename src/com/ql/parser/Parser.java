@@ -49,6 +49,28 @@ public class Parser {
 				}
 			}
 		}
+		else if (value.equals(ReservedWords.NAND)) {
+			result.addAll(words);
+
+			for (String string : operand1) {
+				if (operand2.contains(string)) {
+					result.remove(string);
+				}
+			}
+		}
+		else if (value.equals(ReservedWords.XOR)) {
+			for (String string : operand1) {
+				if (!operand2.contains(string)) {
+					result.add(string);
+				}
+			}
+
+			for (String string : operand2) {
+				if (!operand1.contains(string)) {
+					result.add(string);
+				}
+			}
+		}
 		else if (value.equals(ReservedWords.OR)) {
 			result.addAll(operand1);
 			result.addAll(operand2);
@@ -91,7 +113,13 @@ public class Parser {
 		if (value.equals(ReservedWords.AND)) {
 			return 2;
 		}
+		else if (value.equals(ReservedWords.NAND)) {
+			return 2;
+		}
 		else if (value.equals(ReservedWords.OR)) {
+			return 1;
+		}
+		else if (value.equals(ReservedWords.XOR)) {
 			return 1;
 		}
 		else {

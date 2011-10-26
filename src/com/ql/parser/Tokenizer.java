@@ -59,6 +59,7 @@ public class Tokenizer {
 				case 'O':
 				case 'N':
 				case 'R':
+				case 'X':
 					value += chars[i];
 
 					if (lookupOperator(value)) {
@@ -80,7 +81,10 @@ public class Tokenizer {
 	}
 
 	private static boolean lookupOperator(String value) {
-		return value.equals(ReservedWords.AND) || value.equals(ReservedWords.OR);
+		return (value.equals(ReservedWords.AND) ||
+				value.equals(ReservedWords.NAND) ||
+				value.equals(ReservedWords.OR) ||
+				value.equals(ReservedWords.XOR));
 	}
 
 }
