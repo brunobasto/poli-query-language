@@ -8,7 +8,7 @@ This is a simple query language parser made as an university project. The goal i
 
 3. "Greg" AND ("Anderson" OR "Davidson")
 
-By default the program comes with a database of over 10,000 random generated names that can be found {here}[link:/brunobasto/query-language/src/META-INF/data/random-names.csv].
+By default the program comes with a database of over 10,000 random generated names that can be found {here}[link:/brunobasto/query-language/blob/master/src/META-INF/data/random-names.csv].
 
 The program is basically composed of two parts:
 
